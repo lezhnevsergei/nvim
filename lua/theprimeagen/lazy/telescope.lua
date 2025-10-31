@@ -26,7 +26,7 @@ return {
                 search = vim.fn.input("Grep > "),
                 additional_args = function()
                     return {
-                        "--glob", "!vendor/**",
+                        "--glob", "!**/vendor/**",
                         "--glob", "!**/generated/**",
                     }
                 end,
