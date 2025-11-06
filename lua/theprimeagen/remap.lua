@@ -19,6 +19,163 @@ vim.keymap.set("n", "<leader>svwm", function()
     require("vim-with-me").StopVimWithMe()
 end)
 
+local function fallback_move(direction)
+    if direction > 0 then
+        vim.cmd("normal! ]]")
+    else
+        vim.cmd("normal! [[")
+    end
+end
+
+local function move_between_blocks(direction)
+    -- Try to use treesitter to find next/previous function-like node.
+    local ok_parsers, parsers = pcall(require, "nvim-treesitter.parsers")
+    if not ok_parsers then
+        fallback_move(direction)
+        return
+    end
+
+    local parser = parsers.get_parser(0)
+    if not parser then
+        fallback_move(direction)
+        return
+    end
+
+    local tree = parser:parse()[1]
+    if not tree then
+        fallback_move(direction)
+        return
+    end
+
+    local lang = parser:lang()
+    local node_types = {
+        ["*"] = {
+            "function_declaration",
+            "function_definition",
+            "function_expression",
+            "local_function",
+            "method_definition",
+            "method_declaration",
+            "function_item",
+            "impl_item",
+            "struct_item",
+            "trait_item",
+            "class_declaration",
+            "class_definition",
+            "class_specifier",
+            "class_body",
+        },
+        lua = { "function_declaration", "local_function", "function_definition" },
+        go = { "function_declaration", "method_declaration" },
+        javascript = {
+            "function",
+            "function_declaration",
+            "generator_function_declaration",
+            "method_definition",
+            "class_declaration",
+        },
+        typescript = {
+            "function_declaration",
+            "method_definition",
+            "method_signature",
+            "class_declaration",
+        },
+        tsx = {
+            "function_declaration",
+            "method_definition",
+            "method_signature",
+            "class_declaration",
+        },
+        rust = {
+            "function_item",
+            "impl_item",
+            "struct_item",
+            "trait_item",
+            "enum_item",
+        },
+        c = { "function_definition" },
+        cpp = { "function_definition", "class_specifier", "class_definition" },
+        python = { "function_definition", "class_definition" },
+    }
+
+    local function is_target(node)
+        local t = node:type()
+        local lang_nodes = node_types[lang]
+        if lang_nodes then
+            for _, v in ipairs(lang_nodes) do
+                if v == t then
+                    return true
+                end
+            end
+        end
+        for _, v in ipairs(node_types["*"]) do
+            if v == t then
+                return true
+            end
+        end
+        return false
+    end
+
+    local root = tree:root()
+    local positions = {}
+    local function collect(node)
+        if is_target(node) then
+            local sr, sc = node:start()
+            table.insert(positions, { row = sr, col = sc })
+        end
+        for child in node:iter_children() do
+            collect(child)
+        end
+    end
+    collect(root)
+
+    if #positions == 0 then
+        fallback_move(direction)
+        return
+    end
+
+    table.sort(positions, function(a, b)
+        if a.row == b.row then
+            return a.col < b.col
+        end
+        return a.row < b.row
+    end)
+
+    local cursor = vim.api.nvim_win_get_cursor(0)
+    local current = { row = cursor[1] - 1, col = cursor[2] }
+    local target
+    if direction > 0 then
+        for _, pos in ipairs(positions) do
+            if pos.row > current.row or (pos.row == current.row and pos.col > current.col) then
+                target = pos
+                break
+            end
+        end
+    else
+        for i = #positions, 1, -1 do
+            local pos = positions[i]
+            if pos.row < current.row or (pos.row == current.row and pos.col < current.col) then
+                target = pos
+                break
+            end
+        end
+    end
+
+    if target then
+        vim.api.nvim_win_set_cursor(0, { target.row + 1, target.col })
+    else
+        fallback_move(direction)
+    end
+end
+
+vim.keymap.set({ "n", "x", "o" }, "]]", function()
+    move_between_blocks(1)
+end, { desc = "Next code block" })
+
+vim.keymap.set({ "n", "x", "o" }, "[[", function()
+    move_between_blocks(-1)
+end, { desc = "Previous code block" })
+
 -- greatest remap ever
 vim.keymap.set("x", "<leader>p", [["_dP]])
 
@@ -75,4 +232,3 @@ end)
 vim.keymap.set("n", "<leader><leader>", function()
     vim.cmd("so")
 end)
-
