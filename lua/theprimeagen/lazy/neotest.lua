@@ -25,6 +25,7 @@ return {
                 runner = "gotestsum", -- Optional, but recommended
             }
             require("neotest").setup({
+                output = { open_on_run = true },
                 adapters = {
                     require("neotest-golang")(config),
                 }
@@ -42,6 +43,10 @@ return {
                 local nt = require("neotest"); local id = nt.run.get_last_run()
                 nt.output.open({ enter = true, last_run = id ~= nil })
             end, { desc = "Test: open last output" })
+
+            vim.keymap.set("n", "<leader>tv", function()
+                require("neotest").summary.toggle()
+            end, { desc = "Test: toggle summary" })
 
             vim.api.nvim_create_user_command("NeoTestNearestDebug", function()
                 local nt = require("neotest")
