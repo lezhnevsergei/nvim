@@ -43,6 +43,28 @@ return {
                 },
             }
 
+            table.insert(dap.configurations.go, {
+                type = "go",
+                name = "Debug test (nearest)",
+                request = "launch",
+                mode = "test",
+                program = "${file}",
+                cwd = function()
+                    return project_root()
+                end,
+            })
+
+            table.insert(dap.configurations.go, {
+                type = "go",
+                name = "Debug test (package)",
+                request = "launch",
+                mode = "test",
+                program = "${fileDirname}",
+                cwd = function()
+                    return project_root()
+                end,
+            })
+
             vim.keymap.set("n", "<F5>", dap.continue, { desc = "DAP: Continue" })
             vim.keymap.set("n", "<F10>", dap.step_over, { desc = "DAP: Step over" })
             vim.keymap.set("n", "<F11>", dap.step_into, { desc = "DAP: Step into" })
@@ -51,6 +73,14 @@ return {
             vim.keymap.set("n", "<leader>B", function()
                 dap.set_breakpoint(vim.fn.input("Breakpoint condition: "))
             end, { desc = "DAP: Conditional breakpoint" })
+        end,
+    },
+
+    {
+        "leoluz/nvim-dap-go",
+        dependencies = { "mfussenegger/nvim-dap" },
+        config = function()
+            require("dap-go").setup()
         end,
     },
 

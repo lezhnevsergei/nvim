@@ -23,6 +23,8 @@ return {
         config = function()
             local config = {
                 runner = "gotestsum", -- Optional, but recommended
+                dap_go_enabled = true,
+                warn_test_name_dupes = false,
             }
             require("neotest").setup({
                 output = { open_on_run = true },
@@ -47,6 +49,10 @@ return {
             vim.keymap.set("n", "<leader>tv", function()
                 require("neotest").summary.toggle()
             end, { desc = "Test: toggle summary" })
+
+            vim.keymap.set("n", "<leader>td", function()
+                require("neotest").run.run({ strategy = "dap" })
+            end, { desc = "Test: debug nearest" })
 
             vim.api.nvim_create_user_command("NeoTestNearestDebug", function()
                 local nt = require("neotest")
