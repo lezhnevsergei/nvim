@@ -47,7 +47,7 @@ return {
             end, { desc = "Test: open last output" })
 
             vim.keymap.set("n", "<leader>tv", function()
-                vim.cmd("vsplit") -- гарантируем второй window
+                -- vim.cmd("vsplit") -- гарантируем второй window
                 require("neotest").summary.toggle()
             end, { desc = "Test: summary" })
 

@@ -1,20 +1,35 @@
 return {
     {
         "nvim-treesitter/nvim-treesitter",
-        main = "nvim-treesitter.configs", -- Lazy сам сделает require(...)
         build = ":TSUpdate",
         event = { "BufReadPost", "BufNewFile" },
+
         opts = {
             ensure_installed = { "go", "lua", "vim", "vimdoc", "query", "bash", "rust" },
             highlight = { enable = true, additional_vim_regex_highlighting = false },
             indent = { enable = true },
         },
+        config = function(_, opts)
+            -- тут уже точно есть плагин на runtimepath
+            require("nvim-treesitter.configs").setup(opts)
+        end,
     },
-    -- опционально, если используешь context — но отключаем для Go
     {
         "nvim-treesitter/nvim-treesitter-context",
         dependencies = { "nvim-treesitter/nvim-treesitter" },
         event = { "BufReadPost", "BufNewFile" },
-        opts = { enable = true, disable = { "go" } },
+        opts = {
+            enable = true,
+            multiwindow = false,
+            max_lines = 3,
+            min_window_height = 1,
+            line_numbers = true,
+            multiline_threshold = 1,
+            trim_scope = "outer",
+            mode = "cursor",
+            separator = nil,
+            zindex = 20,
+            on_attach = nil,
+        },
     },
 }

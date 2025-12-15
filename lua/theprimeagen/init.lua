@@ -26,6 +26,7 @@ end
 vim.filetype.add({
     extension = {
         templ = 'templ',
+        brief = 'brief',
     }
 })
 
@@ -97,3 +98,22 @@ vim.api.nvim_create_user_command("NeotestLog", function()
     local state = vim.fn.stdpath("state")
     vim.cmd.edit(state .. "/neotest.log")
 end, {})
+
+vim.lsp.config("briefls", {
+    cmd = { "briefls" },
+    filetypes = { "brief" },
+    root_markers = { ".git" },
+    single_file_support = true,
+    flags = {
+        debounce_text_changes = 150,
+    },
+    capabilities = {
+        workspace = {
+            didChangeWatchedFiles = {
+                dynamicRegistration = true,
+            },
+        },
+    },
+})
+
+vim.lsp.enable "briefls"

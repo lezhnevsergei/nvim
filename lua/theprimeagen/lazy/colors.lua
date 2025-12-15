@@ -1,5 +1,5 @@
 function ColorMyPencils(color)
-    color = color or "vscode"
+    color = color or "rose-pine"
     local ok, err = pcall(vim.cmd.colorscheme, color)
     if not ok then
         vim.notify(("Failed to load colorscheme '%s': %s"):format(color, err), vim.log.levels.ERROR)
@@ -7,19 +7,6 @@ function ColorMyPencils(color)
 end
 
 return {
-
-    {
-        "Mofiqul/vscode.nvim",
-        lazy = false,
-        priority = 1000,
-        config = function()
-            vim.g.vscode_style = "dark"
-            vim.g.vscode_disable_nvimtree_bg = true
-            vim.g.vscode_italic_comment = 1
-            ColorMyPencils("vscode")
-        end,
-    },
-
     {
         "erikbackman/brightburn.vim",
     },
