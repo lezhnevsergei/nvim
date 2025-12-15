@@ -118,7 +118,11 @@ return {
         })
 
         vim.diagnostic.config({
-            -- update_in_insert = true,
+            virtual_text = {
+                source = "always",
+                prefix = '■',
+            },
+            update_in_insert = true,
             float = {
                 focusable = false,
                 style = "minimal",
